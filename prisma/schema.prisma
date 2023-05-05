@@ -54,7 +54,6 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    Lesson        Lesson[]
 }
 
 model VerificationToken {
@@ -65,24 +64,11 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
-model Lesson {
-    id          String   @id @default(cuid())
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    title       String
-    description String   @db.Text
-    slug        String   @unique
-    content     String   @db.Text
-    published   Boolean  @default(false)
-    author      User     @relation(fields: [authorId], references: [id])
-    authorId    String
-    tags        Tag[]
-}
-
-model Tag {
+model Inventory {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    name      String   @unique
-    lessons   Lesson[]
+    name      String
+    isExpired Boolean  @default(false)
+    stock     Int      @default(0)
 }
