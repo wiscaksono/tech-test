@@ -110,7 +110,11 @@ const CreateModal = ({
   refetch: () => void;
 }) => {
   type InventoryItem = RouterInputs["inventory"]["create"];
-  const [values, setValues] = useState<InventoryItem>();
+  const [values, setValues] = useState<InventoryItem>({
+    name: "",
+    stock: 0,
+    isExpired: false,
+  });
   const cancelButtonRef = useRef(null);
 
   const addInventory = api.inventory.create.useMutation({
