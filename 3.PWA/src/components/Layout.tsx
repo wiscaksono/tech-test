@@ -1,8 +1,10 @@
-import { Fragment, useState } from "react";
-import { signOut } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
+import { Fragment, useState } from "react";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/router";
 import { Dialog, Menu, Transition } from "@headlessui/react";
+import { useSession } from "next-auth/react";
 import {
   ArchiveBoxIcon,
   Bars3Icon,
@@ -18,28 +20,23 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 
-import { useSession } from "next-auth/react";
-
 const navigation = [
-  { name: "Home", href: "/", icon: HomeIcon, current: true },
-  { name: "Sales", href: "/sales", icon: BriefcaseIcon, current: false },
+  { name: "Home", href: "/", icon: HomeIcon },
+  { name: "Sales", href: "/sales", icon: BriefcaseIcon },
   {
     name: "Inventory",
     href: "/inventory",
     icon: ArchiveBoxIcon,
-    current: false,
   },
   {
     name: "Purchase",
     href: "/purchase",
     icon: ShoppingCartIcon,
-    current: false,
   },
   {
     name: "User Management",
     href: "/user-management",
     icon: UserCircleIcon,
-    current: false,
   },
 ];
 
@@ -56,6 +53,7 @@ type LayoutProps = {
 export default function Layout({ children, title, description }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data } = useSession();
+  const { pathname } = useRouter();
 
   return (
     <>
@@ -132,7 +130,7 @@ export default function Layout({ children, title, description }: LayoutProps) {
                               <Link
                                 href={item.href}
                                 className={classNames(
-                                  item.current
+                                  pathname === item.href
                                     ? "bg-gray-50 text-indigo-600"
                                     : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
                                   "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
@@ -140,7 +138,7 @@ export default function Layout({ children, title, description }: LayoutProps) {
                               >
                                 <item.icon
                                   className={classNames(
-                                    item.current
+                                    pathname === item.href
                                       ? "text-indigo-600"
                                       : "text-gray-400 group-hover:text-indigo-600",
                                     "h-6 w-6 shrink-0"
@@ -180,7 +178,7 @@ export default function Layout({ children, title, description }: LayoutProps) {
                       <Link
                         href={item.href}
                         className={classNames(
-                          item.current
+                          pathname === item.href
                             ? "bg-gray-50 text-indigo-600"
                             : "text-gray-700 hover:bg-gray-50 hover:text-indigo-600",
                           "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6"
@@ -188,7 +186,7 @@ export default function Layout({ children, title, description }: LayoutProps) {
                       >
                         <item.icon
                           className={classNames(
-                            item.current
+                            pathname === item.href
                               ? "text-indigo-600"
                               : "text-gray-400 group-hover:text-indigo-600",
                             "h-6 w-6 shrink-0"

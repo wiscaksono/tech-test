@@ -80,13 +80,13 @@ const Home: NextPage = () => {
 
         <div className="col-span-6 flex flex-col gap-2.5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow">
           <h4 className="font-medium">Inventory</h4>
-          <div className="max-h-56 divide-y overflow-y-auto pr-2.5">
+          <div className="max-h-56 overflow-y-auto pr-2.5">
             {inventoryData &&
-              inventoryData.map((inventory) => (
-                <div className="flex justify-between" key={inventory.id}>
-                  <p className="text-gray-600">{inventory.name}</p>
-                  <span className="flex h-6 w-6 items-center justify-center rounded bg-indigo-600 text-white">
-                    1
+              inventoryData.slice(0, 10).map((inventory) => (
+                <div className="my-1 flex justify-between" key={inventory.id}>
+                  <p className="text-sm text-gray-500">{inventory.name}</p>
+                  <span className="ml-auto w-9 min-w-max whitespace-nowrap rounded-full bg-gray-50 px-2.5 py-0.5 text-center text-xs font-medium leading-5 text-gray-600 ring-1 ring-inset ring-gray-200">
+                    {inventory.stock}
                   </span>
                 </div>
               ))}

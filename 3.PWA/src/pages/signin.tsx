@@ -141,7 +141,7 @@ export default function SignIn() {
                   </a>
 
                   <a
-                    onClick={() => void signIn("discord")}
+                    onClick={() => void signIn("github")}
                     className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md bg-[#202225] px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24292F]"
                   >
                     <svg
