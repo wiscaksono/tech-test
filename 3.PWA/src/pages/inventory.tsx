@@ -1,13 +1,11 @@
 import { Fragment, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import Layout from "~/components/Layout";
-import { api, type RouterInputs, type RouterOutputs } from "~/utils/api";
+import { api, type RouterInputs } from "~/utils/api";
 
 export default function Inventory() {
   const { data, refetch } = api.inventory.getAll.useQuery();
-  const [openCreateModal, setOpenCreateModal] = useState(false);
-  const [openEditModal, setOpenEditModal] = useState(false);
-  const [selectedData, setSelectedData] = useState(data && data[0]);
+  const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
 
   return (
     <Layout>
@@ -83,15 +81,7 @@ export default function Inventory() {
                           {data.isExpired.toString().toUpperCase()}
                         </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <button
-                            onClick={() => {
-                              setSelectedData(data);
-                              setOpenEditModal(true);
-                            }}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            Edit<span className="sr-only">, {data.name}</span>
-                          </button>
+                          <EditModal data={data} refetch={() => void refetch} />
                         </td>
                       </tr>
                     ))}
@@ -104,13 +94,7 @@ export default function Inventory() {
       <CreateModal
         open={openCreateModal}
         setOpen={setOpenCreateModal}
-        refetch={refetch}
-      />
-      <EditModal
-        data={selectedData}
-        open={openEditModal}
-        setOpen={setOpenEditModal}
-        refetch={refetch}
+        refetch={() => void refetch}
       />
     </Layout>
   );
@@ -125,9 +109,8 @@ const CreateModal = ({
   setOpen: (open: boolean) => void;
   refetch: () => void;
 }) => {
-  type ValuesProps = RouterInputs["inventory"]["create"];
-
-  const [values, setValues] = useState<ValuesProps>();
+  type InventoryItem = RouterInputs["inventory"]["create"];
+  const [values, setValues] = useState<InventoryItem>();
   const cancelButtonRef = useRef(null);
 
   const addInventory = api.inventory.create.useMutation({
@@ -205,6 +188,12 @@ const CreateModal = ({
                           id="stock"
                           autoComplete="stock"
                           className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                          onChange={(e) =>
+                            setValues({
+                              ...values,
+                              stock: e.target.valueAsNumber,
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -222,6 +211,12 @@ const CreateModal = ({
                           name="expired"
                           autoComplete="expired"
                           className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                          onChange={(e) =>
+                            setValues({
+                              ...values,
+                              isExpired: e.target.value === "true",
+                            })
+                          }
                         >
                           <option>false</option>
                           <option>true</option>
@@ -258,156 +253,178 @@ const CreateModal = ({
   );
 };
 
+type InventoryItem = RouterInputs["inventory"]["updateById"];
+
 const EditModal = ({
   data,
-  open,
-  setOpen,
   refetch,
 }: {
-  data: RouterOutputs["inventory"]["getAll"][0];
-  open: boolean;
-  setOpen: (open: boolean) => void;
+  data: InventoryItem;
   refetch: () => void;
 }) => {
-  type ValuesProps = RouterInputs["inventory"]["create"];
+  const [values, setValues] = useState<InventoryItem>({
+    id: data.id,
+    name: data.name,
+    stock: data.stock,
+    isExpired: data.isExpired,
+  });
 
-  const [values, setValues] = useState<ValuesProps>(data);
-  const cancelButtonRef = useRef(null);
+  const [openEditModal, setOpenEditModal] = useState<boolean>(false);
 
-  const addInventory = api.inventory.create.useMutation({
+  const updateInventory = api.inventory.updateById.useMutation({
     onSuccess: () => {
       refetch();
-      setOpen(false);
+      setOpenEditModal(false);
     },
   });
 
   const deleteInventory = api.inventory.deleteById.useMutation({
     onSuccess: () => {
       refetch();
-      setOpen(false);
+      setOpenEditModal(false);
     },
   });
 
   return (
-    <Transition.Root show={open} as={Fragment}>
-      <Dialog
-        as="div"
-        className="relative z-50"
-        initialFocus={cancelButtonRef}
-        onClose={setOpen}
+    <>
+      <button
+        className="text-indigo-600 hover:text-indigo-900"
+        onClick={() => setOpenEditModal(true)}
       >
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
+        Edit<span className="sr-only">, {data.name}</span>
+      </button>
+
+      <Transition.Root show={openEditModal} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          // initialFocus={cancelButtonRef}
+          onClose={setOpenEditModal}
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-        </Transition.Child>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          </Transition.Child>
 
-        <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-                <form className="bg-white md:col-span-2">
-                  <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-6">
-                    <div className="col-span-full">
-                      <label
-                        htmlFor="inventory-name"
-                        className="block text-sm font-medium leading-6 text-gray-900"
-                      >
-                        Name
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          type="text"
-                          name="inventory-name"
-                          id="inventory-name"
-                          autoComplete="inventory-name"
-                          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          defaultValue={data?.name}
-                          onChange={(e) =>
-                            setValues({ ...values, name: e.target.value })
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="sm:col-span-3">
-                      <label
-                        htmlFor="stock"
-                        className="block text-sm font-medium leading-6 text-gray-900"
-                      >
-                        Stock
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          type="number"
-                          name="stock"
-                          id="stock"
-                          autoComplete="stock"
-                          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          defaultValue={data?.stock}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <label
-                        htmlFor="expired"
-                        className="block text-sm font-medium leading-6 text-gray-900"
-                      >
-                        Expired
-                      </label>
-                      <div className="mt-2">
-                        <select
-                          id="expired"
-                          name="expired"
-                          autoComplete="expired"
-                          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                          defaultValue={data?.isExpired.toString()}
+          <div className="fixed inset-0 z-10 overflow-y-auto">
+            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              >
+                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                  <form className="bg-white md:col-span-2">
+                    <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-6">
+                      <div className="col-span-full">
+                        <label
+                          htmlFor="inventory-name"
+                          className="block text-sm font-medium leading-6 text-gray-900"
                         >
-                          <option>false</option>
-                          <option>true</option>
-                        </select>
+                          Name
+                        </label>
+                        <div className="mt-2">
+                          <input
+                            type="text"
+                            name="inventory-name"
+                            id="inventory-name"
+                            autoComplete="inventory-name"
+                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            value={values.name}
+                            onChange={(e) =>
+                              setValues({ ...values, name: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="sm:col-span-3">
+                        <label
+                          htmlFor="stock"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
+                          Stock
+                        </label>
+                        <div className="mt-2">
+                          <input
+                            type="number"
+                            name="stock"
+                            id="stock"
+                            autoComplete="stock"
+                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            value={values.stock}
+                            onChange={(e) =>
+                              setValues({
+                                ...values,
+                                stock: e.target.valueAsNumber,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="sm:col-span-3">
+                        <label
+                          htmlFor="expired"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
+                          Expired
+                        </label>
+                        <div className="mt-2">
+                          <select
+                            id="expired"
+                            name="expired"
+                            autoComplete="expired"
+                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                            defaultValue={values.isExpired?.toString()}
+                            onChange={(e) =>
+                              setValues({
+                                ...values,
+                                isExpired: e.target.value === "true",
+                              })
+                            }
+                          >
+                            <option>false</option>
+                            <option>true</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-5 sm:mt-8 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                    <button
-                      type="button"
-                      className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-                      onClick={() => values && addInventory.mutate(values)}
-                      disabled={!values}
-                    >
-                      Edit Inventory
-                    </button>
-                    <button
-                      type="button"
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-500 shadow-sm ring-1 ring-inset ring-red-300 sm:col-start-1 sm:mt-0"
-                      onClick={() => deleteInventory.mutate({ id: data?.id })}
-                      ref={cancelButtonRef}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </form>
-              </Dialog.Panel>
-            </Transition.Child>
+                    <div className="mt-5 sm:mt-8 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                      <button
+                        type="button"
+                        className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+                        onClick={() => values && updateInventory.mutate(values)}
+                        disabled={!values}
+                      >
+                        Edit Inventory
+                      </button>
+                      <button
+                        type="button"
+                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+                        onClick={() => deleteInventory.mutate({ id: data.id })}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
           </div>
-        </div>
-      </Dialog>
-    </Transition.Root>
+        </Dialog>
+      </Transition.Root>
+    </>
   );
 };

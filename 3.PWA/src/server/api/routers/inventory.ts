@@ -22,7 +22,11 @@ export const inventoryRouter = createTRPCRouter({
     }),
 
   getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.inventory.findMany();
+    return ctx.prisma.inventory.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
   }),
 
   getById: protectedProcedure
@@ -31,6 +35,28 @@ export const inventoryRouter = createTRPCRouter({
       return ctx.prisma.inventory.findUnique({
         where: {
           id: input.id,
+        },
+      });
+    }),
+
+  updateById: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        isExpired: z.boolean().default(false),
+        stock: z.number().default(0),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.inventory.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          name: input.name,
+          isExpired: input.isExpired,
+          stock: input.stock,
         },
       });
     }),

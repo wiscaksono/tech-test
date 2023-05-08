@@ -42,7 +42,11 @@ const Home: NextPage = () => {
         <div className="col-span-3 flex flex-col gap-5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow">
           <h4 className="font-medium">Out of Stock Inventory</h4>
           <div className="flex items-center gap-2.5">
-            <p className="flex-1 text-2xl font-semibold">12</p>
+            <p className="flex-1 text-2xl font-semibold">
+              {inventoryData &&
+                inventoryData.filter((inventory) => inventory.stock === 0)
+                  .length}
+            </p>
           </div>
         </div>
 

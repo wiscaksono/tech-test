@@ -1,7 +1,7 @@
 import { signIn } from "next-auth/react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "~/server/auth";
-import { GetServerSideProps } from "next";
+import { type GetServerSideProps } from "next";
 
 export default function SignIn() {
   return (
@@ -124,7 +124,7 @@ export default function SignIn() {
 
                 <div className="mt-6 grid grid-cols-2 gap-4">
                   <a
-                    onClick={() => signIn("discord")}
+                    onClick={() => void signIn("discord")}
                     className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md bg-[#1D9BF0] px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D9BF0]"
                   >
                     <svg
@@ -141,7 +141,7 @@ export default function SignIn() {
                   </a>
 
                   <a
-                    onClick={() => signIn("discord")}
+                    onClick={() => void signIn("discord")}
                     className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md bg-[#202225] px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24292F]"
                   >
                     <svg

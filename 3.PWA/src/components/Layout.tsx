@@ -301,7 +301,7 @@ export default function Layout({ children, title, description }: LayoutProps) {
                       <Menu.Item>
                         {({ active }) => (
                           <button
-                            onClick={() => signOut()}
+                            onClick={() => void signOut()}
                             className={classNames(
                               active ? "bg-gray-50" : "",
                               "block w-full px-3 py-1 text-left text-sm leading-6 text-gray-900"
