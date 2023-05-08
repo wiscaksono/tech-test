@@ -5,6 +5,7 @@ import {
   type DefaultSession,
 } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
+import DiscordProvider from "next-auth/providers/discord";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
@@ -14,6 +15,14 @@ declare module "next-auth" {
     user: {
       id: string;
       username: string;
+      bidangUsaha: string;
+      NPWP: string;
+      alamat: string;
+      provinsi: string;
+      kotaKabupaten: string;
+      kecamatan: string;
+      kodepos: string;
+      NIB: string;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -23,6 +32,14 @@ declare module "next-auth" {
     // ...other properties
     // role: UserRole;
     username: string;
+    bidangUsaha: string;
+    NPWP: string;
+    alamat: string;
+    provinsi: string;
+    kotaKabupaten: string;
+    kecamatan: string;
+    kodepos: string;
+    NIB: string;
   }
 }
 
@@ -39,6 +56,14 @@ export const authOptions: NextAuthOptions = {
         ...session.user,
         id: user.id,
         username: user.username,
+        bidangUsaha: user.bidangUsaha,
+        NPWP: user.NPWP,
+        alamat: user.alamat,
+        provinsi: user.provinsi,
+        kotaKabupaten: user.kotaKabupaten,
+        kecamatan: user.kecamatan,
+        kodepos: user.kodepos,
+        NIB: user.NIB,
       },
     }),
   },
@@ -47,6 +72,11 @@ export const authOptions: NextAuthOptions = {
     GithubProvider({
       clientId: env.GITHUB_CLIENT_ID,
       clientSecret: env.GITHUB_CLIENT_SECRET,
+    }),
+
+    DiscordProvider({
+      clientId: env.DISCORD_CLIENT_ID,
+      clientSecret: env.DISCORD_CLIENT_SECRET,
     }),
   ],
 };

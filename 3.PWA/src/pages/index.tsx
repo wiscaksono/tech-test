@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type NextPage } from "next";
+import type { NextPage, GetServerSidePropsContext } from "next";
 import Layout from "~/components/Layout";
 import {
   ChevronUpIcon,
@@ -7,15 +7,30 @@ import {
   PresentationChartBarIcon,
   ReceiptPercentIcon,
 } from "@heroicons/react/24/outline";
-import { BarChart, Bar, Cell, XAxis, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  XAxis,
+  ResponsiveContainer,
+} from "recharts";
+import { getSession } from "next-auth/react";
+import { api, type RouterOutputs } from "~/utils/api";
 
-import { api } from "~/utils/api";
+type SalesDataProps = RouterOutputs["sales"]["getAll"][0];
 
 const Home: NextPage = () => {
   const { data: inventoryData } = api.inventory.getAll.useQuery();
+  const { data: inventoryStatusData } =
+    api.inventory.countInventoryStatus.useQuery();
+
+  const { data: salesData } = api.sales.getAll.useQuery();
 
   return (
-    <Layout title="Create T3 App">
+    <Layout title="Home">
       <h3 className="mb-5 text-2xl font-semibold leading-6 text-gray-900">
         Order Statistic
       </h3>
@@ -24,7 +39,9 @@ const Home: NextPage = () => {
         <div className="col-span-3 flex flex-col gap-5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow">
           <h4 className="font-medium">Total Selling</h4>
           <div className="flex items-center gap-2.5">
-            <p className="flex-1 text-2xl font-semibold">890</p>
+            <p className="flex-1 text-2xl font-semibold">
+              {salesData && salesData.length}
+            </p>
             <div className="flex flex-col items-center gap-1 text-indigo-600">
               <ChevronUpIcon className="h-4 w-4" />
               <span className="text-sm font-medium">20.5%</span>
@@ -35,7 +52,12 @@ const Home: NextPage = () => {
         <div className="col-span-3 flex flex-col gap-5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow">
           <h4 className="font-medium">Expired Inventory</h4>
           <div className="flex items-center gap-2.5">
-            <p className="flex-1 text-2xl font-semibold">5</p>
+            <p className="flex-1 text-2xl font-semibold">
+              {inventoryData &&
+                inventoryData.filter(
+                  (inventory) => inventory.isExpired === true
+                ).length}
+            </p>
           </div>
         </div>
 
@@ -56,7 +78,11 @@ const Home: NextPage = () => {
           <div className="flex items-center gap-2.5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow">
             <div className="flex-1 space-y-2.5">
               <h4 className="font-medium">Total Transaksi</h4>
-              <p className="flex-1 text-2xl font-semibold">12</p>
+              <p className="flex-1 text-2xl font-semibold">
+                {salesData &&
+                  inventoryData &&
+                  salesData.length + inventoryData.length}
+              </p>
             </div>
             <PresentationChartBarIcon className="h-12 w-12 text-indigo-600" />
           </div>
@@ -64,7 +90,9 @@ const Home: NextPage = () => {
           <div className="flex items-center gap-2.5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow">
             <div className="flex-1 space-y-2.5">
               <h4 className="font-medium">Sales</h4>
-              <p className="flex-1 text-2xl font-semibold">289</p>
+              <p className="flex-1 text-2xl font-semibold">
+                {salesData && salesData.length}
+              </p>
             </div>
             <ReceiptPercentIcon className="h-12 w-12 text-indigo-600" />
           </div>
@@ -81,18 +109,21 @@ const Home: NextPage = () => {
         <div className="col-span-6 flex flex-col gap-2.5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow">
           <h4 className="font-medium">Inventory</h4>
           <div className="max-h-56 overflow-y-auto pr-2.5">
-            {inventoryData &&
-              inventoryData.slice(0, 10).map((inventory) => (
-                <div className="my-1 flex justify-between" key={inventory.id}>
-                  <p className="text-sm text-gray-500">{inventory.name}</p>
+            {inventoryStatusData &&
+              Object.entries(inventoryStatusData).map(([status, count]) => (
+                <div key={status} className="my-1 flex justify-between">
+                  <p className="text-sm text-gray-500">
+                    {status.replace(/_/g, " ")}
+                  </p>
                   <span className="ml-auto w-9 min-w-max whitespace-nowrap rounded-full bg-gray-50 px-2.5 py-0.5 text-center text-xs font-medium leading-5 text-gray-600 ring-1 ring-inset ring-gray-200">
-                    {inventory.stock}
+                    {count}
                   </span>
                 </div>
               ))}
           </div>
         </div>
-        <div className="col-span-6 flex flex-col gap-5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow"></div>
+
+        <SalesChart salesData={salesData} />
       </section>
     </Layout>
   );
@@ -150,10 +181,7 @@ const SalesPurchase = () => {
 
   const [activeIndex, setActiveIndex] = useState(data.length - 1);
 
-  function handleClick(
-    event: React.MouseEvent<HTMLButtonElement>,
-    index: number
-  ): void {
+  function handleClick(_: unknown, index: number): void {
     setActiveIndex(index);
   }
 
@@ -226,3 +254,63 @@ const SalesPurchase = () => {
     </div>
   );
 };
+
+const SalesChart = ({ salesData }: { salesData: SalesDataProps }) => {
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+  const data: { name: string; value: number }[] = [];
+  if (Array.isArray(salesData)) {
+    salesData.forEach((item: SalesDataProps) => {
+      const partnerName = item.partner.name;
+      const existingItem = data.find((x) => x.name === partnerName);
+      if (existingItem) {
+        existingItem.value++;
+      } else {
+        data.push({ name: partnerName, value: 1 });
+      }
+    });
+  }
+
+  return (
+    <div className="col-span-6 flex flex-col gap-2.5 bg-white px-4 py-5 sm:rounded-lg sm:px-6 sm:shadow">
+      <h4 className="font-medium">Inventory</h4>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart width={400} height={400}>
+          <Pie
+            dataKey="value"
+            isAnimationActive={false}
+            data={data}
+            cx="50%"
+            cy="50%"
+            outerRadius={80}
+            label
+          >
+            {data.map((_, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/signin",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: { session },
+  };
+}

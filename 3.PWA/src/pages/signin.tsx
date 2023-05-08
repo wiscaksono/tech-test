@@ -6,7 +6,7 @@ import { type GetServerSideProps } from "next";
 export default function SignIn() {
   return (
     <>
-      <div className="flex min-h-screen flex-1">
+      <div className="flex min-h-screen flex-1 bg-white">
         <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
@@ -18,15 +18,6 @@ export default function SignIn() {
               <h2 className="mt-8 text-2xl font-bold leading-9 tracking-tight text-gray-900">
                 Sign in to your account
               </h2>
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                Not a member?{" "}
-                <a
-                  href="#"
-                  className="font-semibold text-indigo-600 hover:text-indigo-500"
-                >
-                  Start a 14 day free trial
-                </a>
-              </p>
             </div>
 
             <div className="mt-10">
@@ -125,24 +116,7 @@ export default function SignIn() {
                 <div className="mt-6 grid grid-cols-2 gap-4">
                   <a
                     onClick={() => void signIn("discord")}
-                    className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md bg-[#1D9BF0] px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D9BF0]"
-                  >
-                    <svg
-                      className="h-5 w-5"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84" />
-                    </svg>
-                    <span className="text-sm font-semibold leading-6">
-                      Twitter
-                    </span>
-                  </a>
-
-                  <a
-                    onClick={() => void signIn("github")}
-                    className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md bg-[#202225] px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24292F]"
+                    className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md bg-[#2c2f33] px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D9BF0]"
                   >
                     <svg
                       fill="currentColor"
@@ -153,6 +127,22 @@ export default function SignIn() {
                     </svg>
                     <span className="text-sm font-semibold leading-6">
                       Discord
+                    </span>
+                  </a>
+
+                  <a
+                    onClick={() => void signIn("github")}
+                    className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md bg-[#202225] px-3 py-1.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24292F]"
+                  >
+                    <svg
+                      fill="currentColor"
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12,2.2467A10.00042,10.00042,0,0,0,8.83752,21.73419c.5.08752.6875-.21247.6875-.475,0-.23749-.01251-1.025-.01251-1.86249C7,19.85919,6.35,18.78423,6.15,18.22173A3.636,3.636,0,0,0,5.125,16.8092c-.35-.1875-.85-.65-.01251-.66248A2.00117,2.00117,0,0,1,6.65,17.17169a2.13742,2.13742,0,0,0,2.91248.825A2.10376,2.10376,0,0,1,10.2,16.65923c-2.225-.25-4.55-1.11254-4.55-4.9375a3.89187,3.89187,0,0,1,1.025-2.6875,3.59373,3.59373,0,0,1,.1-2.65s.83747-.26251,2.75,1.025a9.42747,9.42747,0,0,1,5,0c1.91248-1.3,2.75-1.025,2.75-1.025a3.59323,3.59323,0,0,1,.1,2.65,3.869,3.869,0,0,1,1.025,2.6875c0,3.83747-2.33752,4.6875-4.5625,4.9375a2.36814,2.36814,0,0,1,.675,1.85c0,1.33752-.01251,2.41248-.01251,2.75,0,.26251.1875.575.6875.475A10.0053,10.0053,0,0,0,12,2.2467Z"></path>
+                    </svg>
+                    <span className="text-sm font-semibold leading-6">
+                      Github
                     </span>
                   </a>
                 </div>

@@ -11,8 +11,6 @@ import {
   BellIcon,
   BriefcaseIcon,
   HomeIcon,
-  ShoppingCartIcon,
-  UserCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -27,16 +25,6 @@ const navigation = [
     name: "Inventory",
     href: "/inventory",
     icon: ArchiveBoxIcon,
-  },
-  {
-    name: "Purchase",
-    href: "/purchase",
-    icon: ShoppingCartIcon,
-  },
-  {
-    name: "User Management",
-    href: "/user-management",
-    icon: UserCircleIcon,
   },
 ];
 

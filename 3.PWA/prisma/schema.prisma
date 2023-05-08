@@ -47,11 +47,18 @@ model Session {
 
 model User {
     id            String    @id @default(cuid())
-    username      String?
     name          String?
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    bidangUsaha   String?
+    NPWP          String?
+    alamat        String?
+    provinsi      String?
+    kotaKabupaten String?
+    kecamatan     String?
+    kodepos       String?
+    NIB           String?
     accounts      Account[]
     sessions      Session[]
 }
@@ -82,4 +89,21 @@ enum InventoryStatus {
     SENT
     CANCEL
     DONE
+}
+
+model Partner {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    name      String
+    Sales     Sales[]
+}
+
+model Sales {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    name      String
+    partner   Partner  @relation(fields: [partnerId], references: [id])
+    partnerId String
 }

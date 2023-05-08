@@ -1,5 +1,7 @@
 import { Fragment, useRef, useState } from "react";
+import type { GetServerSidePropsContext } from "next";
 import { Dialog, Transition } from "@headlessui/react";
+import { getSession } from "next-auth/react";
 import Layout from "~/components/Layout";
 import { api, type RouterInputs } from "~/utils/api";
 
@@ -8,7 +10,7 @@ export default function Inventory() {
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
 
   return (
-    <Layout>
+    <Layout title="Inventory">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
           <h1 className="text-base font-semibold leading-6 text-gray-900">
@@ -55,6 +57,12 @@ export default function Inventory() {
                     </th>
                     <th
                       scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Status
+                    </th>
+                    <th
+                      scope="col"
                       className="relative py-3.5 pl-3 pr-4 sm:pr-6"
                     >
                       <span className="sr-only">Edit</span>
@@ -79,6 +87,9 @@ export default function Inventory() {
                           }`}
                         >
                           {data.isExpired.toString().toUpperCase()}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {data.status}
                         </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                           <EditModal data={data} refetch={() => void refetch} />
@@ -432,3 +443,20 @@ const EditModal = ({
     </>
   );
 };
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/signin",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: { session },
+  };
+}

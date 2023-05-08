@@ -29,16 +29,6 @@ export const inventoryRouter = createTRPCRouter({
     });
   }),
 
-  getById: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(({ ctx, input }) => {
-      return ctx.prisma.inventory.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
-    }),
-
   updateById: protectedProcedure
     .input(
       z.object({
@@ -70,4 +60,43 @@ export const inventoryRouter = createTRPCRouter({
         },
       });
     }),
+
+  countInventoryStatus: protectedProcedure.query(async ({ ctx }) => {
+    enum InventoryStatus {
+      READY = "READY",
+      NEW_ORDER = "NEW_ORDER",
+      PREPARE_ORDER = "PREPARE_ORDER",
+      WAITING_PICKUP = "WAITING_PICKUP",
+      SENT = "SENT",
+      CANCEL = "CANCEL",
+      DONE = "DONE",
+    }
+    const statuses = Object.values(InventoryStatus);
+
+    type InventoryCounts = {
+      [key in InventoryStatus]: number;
+    };
+
+    const counts: InventoryCounts = {
+      READY: 0,
+      NEW_ORDER: 0,
+      PREPARE_ORDER: 0,
+      WAITING_PICKUP: 0,
+      SENT: 0,
+      CANCEL: 0,
+      DONE: 0,
+    };
+
+    for (const status of statuses) {
+      const count = await ctx.prisma.inventory.count({
+        where: {
+          status,
+        },
+      });
+
+      counts[status] = count;
+    }
+
+    return counts;
+  }),
 });
