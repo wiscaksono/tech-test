@@ -20,7 +20,7 @@ import {
 import { getSession } from "next-auth/react";
 import { api, type RouterOutputs } from "~/utils/api";
 
-type SalesDataProps = RouterOutputs["sales"]["getAll"][0];
+type SalesDataProps = RouterOutputs["sales"]["getAll"];
 
 const Home: NextPage = () => {
   const { data: inventoryData } = api.inventory.getAll.useQuery();
@@ -255,11 +255,15 @@ const SalesPurchase = () => {
   );
 };
 
-const SalesChart = ({ salesData }: { salesData: SalesDataProps }) => {
+const SalesChart = ({
+  salesData,
+}: {
+  salesData: SalesDataProps | undefined;
+}) => {
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
   const data: { name: string; value: number }[] = [];
   if (Array.isArray(salesData)) {
-    salesData.forEach((item: SalesDataProps) => {
+    salesData.forEach((item: SalesDataProps[0]) => {
       const partnerName = item.partner.name;
       const existingItem = data.find((x) => x.name === partnerName);
       if (existingItem) {
